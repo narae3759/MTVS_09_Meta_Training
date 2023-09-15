@@ -33,10 +33,11 @@ def search(query:str) -> str:
         content = content if content != "" else "youtube"
         content = content if "ago" not in content else "news"
 
-        link = {
-            "url": url,
-            "title": title,
-            "content": content,
-        }
-        links.append(link)
-    return links
+        if content not in ["youtube", "news"]:
+            link = {
+                "url": url,
+                "title": title,
+                "content": content,
+            }
+            links.append(link)
+    return links[:3]
