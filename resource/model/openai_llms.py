@@ -92,18 +92,21 @@ class OpenAILinkProvider():
         conversation = LLMChain(
             prompt=self.prompt,
             llm=chat_model,
+            verbose=True,
         )
         return conversation
     
     def get_prompt(self) -> PromptTemplate:
         template = """
-입력에 대한 답을 구글에서 검색할 수 있도록 검색어를 추천합니다"""
+{input}에 대한 답을 찾을 수 있도록 구글에서 검색할 검색어를 추천합니다
+검색어만 출력합니다"""
 
         prompt = PromptTemplate.from_template(template=template)
         return prompt
     
     def get_answer(self, user_input:str) -> str:
         query = self.model.predict(input=user_input)
+        print(f"{query}를 검색합니다...")
         return search(query)
     
     
