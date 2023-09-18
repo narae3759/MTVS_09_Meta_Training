@@ -32,8 +32,8 @@ def make_subject(item: Subject):
     category = item.dict()['category']
     subjects =subject_recommander.get_answer(category)
     
-    return JSONResponse(content=jsonable_encoder(subjects))
-    # return subjects
+    # return JSONResponse(content=jsonable_encoder(subjects))
+    return {"subjects": subjects}
 
 ### sample
 class Server(BaseModel):
