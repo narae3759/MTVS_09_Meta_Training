@@ -120,14 +120,13 @@ class OpenAISubjectRecommander():
     
     def get_prompt(self, subject:str) -> PromptTemplate:
         template1 = """
-{subject}에 연관된 주제를 제시합니다
-논쟁적인 글쓰기를 위한 주제를 제시합니다
+{subject}에 연관된 논쟁적인 글쓰기를 위한 주제를 제시합니다
 10대 학생을 대상으로 합니다
 포괄적인 주제는 제외합니다
-지나치게 논쟁적인 주제는 제외합니다
 20자 미만으로 출력합니다
-한 번에 5개씩 출력합니다
-각 주제는 줄바꿈으로 구분합니다 """
+한 번에 5개씩 번호 없이 출력합니다
+각 주제는 줄바꿈으로 구분합니다
+중복된 주제를 제외합니다"""
         template2 = """
 Current conversation:
 {history}
