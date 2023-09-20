@@ -44,10 +44,10 @@ def chat(item: Chat):
 
         # task = classifier.get_task(user_input)
         # model = free_chat if task == "free_chat" else link_provider
-        
+
         return {
             "answer": {
-                "type": "links", 
+                "type": "link", 
                 "result": link_provider.get_answer(user_input)
             }
         }
