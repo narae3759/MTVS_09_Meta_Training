@@ -40,4 +40,5 @@ def search(query:str) -> str:
                 "content": content,
             }
             links.append(link)
+        
     return links[:3]

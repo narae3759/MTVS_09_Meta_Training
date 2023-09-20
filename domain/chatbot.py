@@ -45,12 +45,22 @@ def chat(item: Chat):
         # task = classifier.get_task(user_input)
         # model = free_chat if task == "free_chat" else link_provider
         
-        return {"answer":link_provider.get_answer(user_input)}
+        return {
+            "answer": {
+                "type": "links", 
+                "result": link_provider.get_answer(user_input)
+            }
+        }
     
     elif "free_talk" in intent:
         answer = freechat(content, user_input)
         
-        return {"answer":answer}
+        return {
+            "answer": {
+                "type": "chat",
+                "result": answer
+            }
+        }
 
 ############################################
 # 2. 질문 생성
