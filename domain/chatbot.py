@@ -43,8 +43,9 @@ def chat(item: Chat):
         link_provider = OpenAILinkProvider()
 
         # task = classifier.get_task(user_input)
-        # model = free_chat if task == "free_chat" else link_provider
+        # model = free_chat if task == "free_chat" else link_provider   
 
+        print("link: " + link_provider.get_answer(user_input))
         return {
             "answer": {
                 "type": "link", 
@@ -55,6 +56,8 @@ def chat(item: Chat):
     elif "free_talk" in intent:
         answer = freechat(content, user_input)
         
+
+        print("chat: "+answer)
         return {
             "answer": {
                 "type": "chat",
