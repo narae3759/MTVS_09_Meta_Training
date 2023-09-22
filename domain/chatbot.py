@@ -51,7 +51,7 @@ def chat(item: Chat):
                 "result": link_provider.get_answer(user_input)
             }
         }
-    
+    # test
     elif "free_talk" in intent:
         answer = freechat(content, user_input)
         
