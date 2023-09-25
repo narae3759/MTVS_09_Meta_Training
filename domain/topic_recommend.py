@@ -5,6 +5,8 @@ import json
 from fastapi.responses import JSONResponse
 from fastapi.encoders import jsonable_encoder
 import openai
+import pandas as pd
+from random import sample
 import dotenv
 import os
 from resource.model.openai_llms import OpenAISubjectRecommander
@@ -31,9 +33,15 @@ def make_subject(item: Subject):
     print(item)
     category = item.dict()['category']
     subjects =subject_recommander.get_answer(category)
+
+    hotissue = pd.read_csv('./resource/model/trending_topic.csv')
+    hotissue = hotissue[hotissue['category']==category]
+    r = sample(range(hotissue.shape[0]),2)
+    hotissue = hotissue.iloc[r,1].tolist()
+    print(hotissue)
     
     # return JSONResponse(content=jsonable_encoder(subjects))
-    return {"subjects": subjects}
+    return {"subjects": hotissue + subjects[:3]}
 
 ### sample
 class Server(BaseModel):
