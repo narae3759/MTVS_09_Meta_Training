@@ -7,7 +7,7 @@ import openai
 import dotenv
 import os
 from resource.model.openai_llms import ClassificationLLM, OpenAIFreeChat, OpenAILinkProvider
-from utils.make_chatbot import intention
+from utils.make_chatbot import intention, provide_links, freechat
 
 dotenv_file = dotenv.find_dotenv()
 dotenv.load_dotenv(dotenv_file)
@@ -18,6 +18,11 @@ openai.api_key = key
 router = APIRouter(
     prefix="/chatbot",
 )
+
+# DB Connection
+from database.sqlite import SessionLocal
+from database.models import MetaTraining
+db = SessionLocal()
 
 ############################################
 # 1. 채팅 생성(의도 분류, 링크 생성, 자유 대화)
@@ -46,7 +51,7 @@ def chat(item: Chat):
         # task = classifier.get_task(user_input)
         # model = free_chat if task == "free_chat" else link_provider   
 
-        # print("link: " + link_provider.get_answer(user_input))
+        print("link: " + link_provider.get_answer(user_input))
         return {
             "answer": {
                 "type": "link", 
@@ -55,10 +60,10 @@ def chat(item: Chat):
         }
     # test
     elif "free_talk" in intent:
-        # answer = freechat(content, user_input)
-        free_chat = OpenAIFreeChat()
+        answer = freechat(content, user_input)
+        
 
-        # print("chat: "+answer)
+        print("chat: "+answer)
         return {
             "answer": {
                 "type": "chat",
@@ -122,6 +127,20 @@ def read_item(item: Question):
         max_tokens=1000
         )
 
+        
     make_q = chat_completion.choices[0].message.content  ## gpt결과값 출력
     output = json.loads(make_q)
+
+    # Write on DB
+    db.add(
+        MetaTraining(
+            task="make question",
+            instruct=system_text,
+            memory="",
+            input=content,
+            output=make_q
+        )
+    )
+    db.commit()
+
     return output

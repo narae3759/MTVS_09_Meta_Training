@@ -4,7 +4,6 @@
 import openai
 import dotenv
 import os
-import json
 
 dotenv_file = dotenv.find_dotenv()
 dotenv.load_dotenv(dotenv_file)
@@ -12,11 +11,14 @@ dotenv.load_dotenv(dotenv_file)
 key = os.environ["OPENAI_API_KEY"]
 openai.api_key = key
 
-from domain import topic_recommend,chatbot,modification
-
-
-from typing import Union
 from fastapi import FastAPI
+
+# Sqlite DataBase
+from database import models
+from database.sqlite import engine
+models.Base.metadata.create_all(bind=engine)
+
+from domain import topic_recommend,chatbot,modification
 
 app = FastAPI()
 
