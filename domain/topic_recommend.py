@@ -70,7 +70,7 @@ def make_category(item: Category):
         messages=[
             {
                 "role": "system",
-                "content": "category=[일상, 사회, 과학,스포츠, 문화/예술,환경]\nUser가 입력한 값을 category 리스트 중 1개로 분류해주세요.\n문자열로 출력해야 합니다."
+                "content": "category=[일상,사회,과학,스포츠,문화/예술,환경]\nUser가 입력한 값을 category 리스트 중 1개로 분류해주세요.\n문자열로 출력해야 합니다."
             },
             {
                 "role": "user",
