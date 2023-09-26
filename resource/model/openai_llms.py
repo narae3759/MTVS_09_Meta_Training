@@ -9,7 +9,6 @@ import dotenv
 
 from utils.search_google import search
 
-
 # OpenAI API Key
 dotenv_file = dotenv.find_dotenv()
 dotenv.load_dotenv(dotenv_file)
@@ -64,7 +63,7 @@ class ClassificationLLM():
 
 class OpenAIFreeChat():
     def __init__(self) -> None:
-        pass
+        self.history = None
     
     def get_model(self) -> ChatOpenAI:
         openai_api_key = OPENAI_API_KEY
@@ -101,7 +100,7 @@ AI Assistant:"""
             prompt=prompt,
             llm=model,
             verbose=True,
-            memory=ConversationBufferWindowMemory(ai_prefix="AI Assistant", k=10)
+            memory=ConversationBufferWindowMemory(ai_prefix="AI Assistant", k=10) if self.history == None else self.history
         )
         return conversation
     
@@ -109,6 +108,28 @@ AI Assistant:"""
         chain = self.get_chain(prompt=self.get_prompt(content), model=self.get_model())
         answer = chain.predict(input=user_input)
         
+         # Prompt without History
+        index = chain.prompt.template.index("Current conversation")
+        prompt = chain.prompt.template[:index]
+        
+        # Conversation History
+        memory_history = chain.memory.chat_memory.messages
+        memory = "\n".join([f"{type(memory).__name__}: {memory.content}" for memory in memory_history])
+
+        # Write on DB
+        db.add(
+            MetaTraining(
+                task="free chat",
+                instruct=prompt,
+                memory=memory,
+                input=user_input,
+                output=answer
+            )
+        )
+        db.commit()
+
+        self.history = chain.memory
+
         return answer
 
 

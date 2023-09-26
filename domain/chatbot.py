@@ -7,7 +7,7 @@ import openai
 import dotenv
 import os
 from resource.model.openai_llms import ClassificationLLM, OpenAIFreeChat, OpenAILinkProvider
-from utils.make_chatbot import intention, provide_links, freechat
+from utils.make_chatbot import intention
 
 dotenv_file = dotenv.find_dotenv()
 dotenv.load_dotenv(dotenv_file)
@@ -60,10 +60,9 @@ def chat(item: Chat):
         }
     # test
     elif "free_talk" in intent:
-        answer = freechat(content, user_input)
+        free_chat = OpenAIFreeChat()
         
-
-        print("chat: "+answer)
+        # print("chat: "+answer)
         return {
             "answer": {
                 "type": "chat",
