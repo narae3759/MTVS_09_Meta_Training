@@ -7,7 +7,7 @@ import openai
 import dotenv
 import os
 from resource.model.openai_llms import ClassificationLLM, OpenAIFreeChat, OpenAILinkProvider
-from utils.make_chatbot import intention, provide_links, freechat
+from utils.make_chatbot import intention
 
 dotenv_file = dotenv.find_dotenv()
 dotenv.load_dotenv(dotenv_file)
@@ -41,11 +41,12 @@ def chat(item: Chat):
         # classifier = ClassificationLLM()        # 의도 분류 langchain 
         # free_chat = OpenAIFreeChat()            # 여기서 쓰일 게 아님.
         link_provider = OpenAILinkProvider()
+        
 
         # task = classifier.get_task(user_input)
         # model = free_chat if task == "free_chat" else link_provider   
 
-        print("link: " + link_provider.get_answer(user_input))
+        # print("link: " + link_provider.get_answer(user_input))
         return {
             "answer": {
                 "type": "link", 
@@ -54,14 +55,14 @@ def chat(item: Chat):
         }
     # test
     elif "free_talk" in intent:
-        answer = freechat(content, user_input)
-        
+        # answer = freechat(content, user_input)
+        free_chat = OpenAIFreeChat()
 
-        print("chat: "+answer)
+        # print("chat: "+answer)
         return {
             "answer": {
                 "type": "chat",
-                "result": answer
+                "result": free_chat.get_answer(content, user_input)
             }
         }
 
