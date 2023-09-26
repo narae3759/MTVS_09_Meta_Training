@@ -13,10 +13,14 @@ openai.api_key = key
 
 from fastapi import APIRouter
 
-
 router = APIRouter(
     prefix="/modification",
 )
+
+# DB Connection
+from database.sqlite import SessionLocal
+from database.models import MetaTraining
+db = SessionLocal()
 
 class Title(BaseModel):
     content: Union[str, None] = None
@@ -65,6 +69,19 @@ def make_title(item: Title):
 
     make_t = chat_completion.choices[0].message.content  ## gpt결과값 출력
     output = json.loads(make_t)
+    
+    # Write on DB
+    db.add(
+        MetaTraining(
+            task="make title",
+            instruct=system_text,
+            memory="",
+            input=content,
+            output=make_t
+        )
+    )
+    db.commit()
+    
     return output
 
 
@@ -165,6 +182,19 @@ def check_content(item: Check):
 
     check_c = chat_completion.choices[0].message.content  ## gpt결과값 출력
     output = json.loads(check_c)
+    
+    # Write on DB
+    db.add(
+        MetaTraining(
+            task="check content",
+            instruct=system_text,
+            memory="",
+            input=content,
+            output=output
+        )
+    )
+    db.commit()
+    
     return output
 
 

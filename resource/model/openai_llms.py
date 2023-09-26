@@ -1,12 +1,24 @@
-from pathlib import Path
-import json
+import os
 
 from langchain.chat_models import ChatOpenAI
 from langchain.prompts.prompt import PromptTemplate
 from langchain.chains import ConversationChain, LLMChain
 from langchain.memory import ConversationBufferWindowMemory
 
+import dotenv
+
 from utils.search_google import search
+
+
+# OpenAI API Key
+dotenv_file = dotenv.find_dotenv()
+dotenv.load_dotenv(dotenv_file)
+OPENAI_API_KEY = os.environ["OPENAI_API_KEY"]
+
+# DB Connection
+from database.sqlite import SessionLocal
+from database.models import MetaTraining
+db = SessionLocal()
 
 class ClassificationLLM():
     def __init__(self) -> None:
@@ -14,9 +26,7 @@ class ClassificationLLM():
         self.model = self.get_model()
     
     def get_model(self) -> ChatOpenAI:
-        secret_path = Path("resource").joinpath("secrets.json")
-        secrets = json.loads(open(secret_path).read())
-        openai_api_key = secrets["OPENAI_API_KEY"]
+        openai_api_key = OPENAI_API_KEY
         chat_model = ChatOpenAI(model="gpt-4", openai_api_key=openai_api_key)
         conversation = LLMChain(
             prompt=self.prompt,
@@ -35,7 +45,21 @@ class ClassificationLLM():
         return prompt
     
     def get_task(self, user_input:str) -> str:
-        return self.model.predict(input=user_input)
+        # Answer from LLM
+        output = self.model.predict(input=user_input)
+        
+        # Write on DB
+        db.add(
+            MetaTraining(
+                task="task classification",
+                instruct=self.model.prompt.template,
+                memory="",
+                input=user_input,
+                output=output
+            )
+        )
+        db.commit()
+        return output
         
 
 class OpenAIFreeChat():
@@ -44,15 +68,12 @@ class OpenAIFreeChat():
         self.model = self.get_model()
     
     def get_model(self) -> ChatOpenAI:
-        secret_path = Path("resource").joinpath("secrets.json")
-        secrets = json.loads(open(secret_path).read())
-        openai_api_key = secrets["OPENAI_API_KEY"]
+        openai_api_key = OPENAI_API_KEY
         model = ChatOpenAI(model="gpt-4", openai_api_key=openai_api_key)
         return model
     
     def get_prompt(self) -> PromptTemplate:
         template = """
-
 
 Current conversation:
 {history}
@@ -85,9 +106,7 @@ class OpenAILinkProvider():
         self.model = self.get_model()
     
     def get_model(self) -> ChatOpenAI:
-        secret_path = Path("resource").joinpath("secrets.json")
-        secrets = json.loads(open(secret_path).read())
-        openai_api_key = secrets["OPENAI_API_KEY"]
+        openai_api_key = OPENAI_API_KEY
         chat_model = ChatOpenAI(model="gpt-4", openai_api_key=openai_api_key)
         conversation = LLMChain(
             prompt=self.prompt,
@@ -105,19 +124,31 @@ class OpenAILinkProvider():
         return prompt
     
     def get_answer(self, user_input:str) -> str:
+        # Answer from LLM
         query = self.model.predict(input=user_input)
+        
+        # Write on DB
+        db.add(
+            MetaTraining(
+                task="recommand search term",
+                instruct=self.model.prompt.template,
+                memory="",
+                input=user_input,
+                output=query
+            )
+        )
+        db.commit()
+        
         print(f"{query}를 검색합니다...")
         return search(query)
     
     
 class OpenAISubjectRecommander():
     def __init__(self) -> None:
-        pass
+        self.history = None
     
     def get_model(self) -> ChatOpenAI:
-        secret_path = Path("resource").joinpath("secrets.json")
-        secrets = json.loads(open(secret_path).read())
-        openai_api_key = secrets["OPENAI_API_KEY"]
+        openai_api_key = OPENAI_API_KEY
         model = ChatOpenAI(model="gpt-4", openai_api_key=openai_api_key)
         return model
     
@@ -144,12 +175,36 @@ AI Assistant:"""
             prompt=prompt,
             llm=model,
             verbose=True,
-            memory=ConversationBufferWindowMemory(ai_prefix="AI Assistant", k=10)
+            memory=ConversationBufferWindowMemory(ai_prefix="AI Assistant", k=10) if self.history == None else self.history
         )
         return conversation
     
     def get_answer(self, category:str) -> str:
         chain = self.get_chain(prompt=self.get_prompt(category), model=self.get_model())
+        
+        # Prompt without History
+        index = chain.prompt.template.index("Current conversation")
+        prompt = chain.prompt.template[:index]
+        
+        # Conversation History
+        memory_history = chain.memory.chat_memory.messages
+        memory = "\n".join([f"{type(memory).__name__}: {memory.content}" for memory in memory_history])
+
+        # Answer from LLM
         answer = chain.predict(input=category)
+        
+        # Write on DB
+        db.add(
+            MetaTraining(
+                task="recommand search term",
+                instruct=prompt,
+                memory=memory,
+                input=category,
+                output=answer
+            )
+        )
+        db.commit()
+        
+        self.history = chain.memory
         answer = answer.split("\n")
         return answer

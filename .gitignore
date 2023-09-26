@@ -262,6 +262,9 @@ pyrightconfig.json
 # Secrets
 secrets.json
 
+# migrations
+/migrations
+
 # env
 .env
 
