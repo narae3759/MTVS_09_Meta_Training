@@ -7,7 +7,7 @@ import openai
 import dotenv
 import os
 from resource.model.openai_llms import ClassificationLLM, OpenAIFreeChat, OpenAILinkProvider
-from utils.make_chatbot import intention, provide_links, freechat
+from utils.make_chatbot import intention, freechat
 
 dotenv_file = dotenv.find_dotenv()
 dotenv.load_dotenv(dotenv_file)
@@ -18,6 +18,11 @@ openai.api_key = key
 router = APIRouter(
     prefix="/chatbot",
 )
+
+# DB Connection
+from database.sqlite import SessionLocal
+from database.models import MetaTraining
+db = SessionLocal()
 
 ############################################
 # 1. 채팅 생성(의도 분류, 링크 생성, 자유 대화)
@@ -43,14 +48,25 @@ def chat(item: Chat):
         link_provider = OpenAILinkProvider()
 
         # task = classifier.get_task(user_input)
-        # model = free_chat if task == "free_chat" else link_provider
-        
-        return link_provider.get_answer(user_input, content)
-    
+        # model = free_chat if task == "free_chat" else link_provider   
+
+        return {
+            "answer": {
+                "type": "link", 
+                "result": link_provider.get_answer(user_input)
+            }
+        }
+    # test
     elif "free_talk" in intent:
         answer = freechat(content, user_input)
         
-        return {"answer":answer}
+        print("chat: "+answer)
+        return {
+            "answer": {
+                "type": "chat",
+                "result": answer
+            }
+        }
 
 ############################################
 # 2. 질문 생성
@@ -63,10 +79,13 @@ def read_item(item: Question):
     content = item.dict()['content']
 
     system_text='''
-    1.사용자가 글을 쓸 때 도움이 되는 질문을 해줘야 돼
-    2.입력은 <주제^서론^본론^결론> 순서로 나와
-    3.출력으로는 간단한 질문을 3가지 정도를 말해줘
-    4.출력형식은 Json형식으로 나타내줘
+    - 사용자가 글을 쓸 때 도움이 되는 질문을 해줘야 돼
+    - 말투는 청소년의 시선에 맞춰 친절하게 권유형으로 해줘
+    - 입력은 <주제^서론^본론^결론> 순서로 나와
+    - 입력의 내용과 벗어나지 않도록 답변해줘
+    - 제안하는 의견도 포함해줘
+    - 출력으로는 간단한 질문을 3가지 정도를 말해줘
+    - 리스트로 묶어서 Json형식으로 나타내줘
     '''
 
     pre_input1 = '''
@@ -105,6 +124,20 @@ def read_item(item: Question):
         max_tokens=1000
         )
 
+        
     make_q = chat_completion.choices[0].message.content  ## gpt결과값 출력
     output = json.loads(make_q)
+
+    # Write on DB
+    db.add(
+        MetaTraining(
+            task="make question",
+            instruct=system_text,
+            memory="",
+            input=content,
+            output=make_q
+        )
+    )
+    db.commit()
+
     return output
