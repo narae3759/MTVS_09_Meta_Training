@@ -259,9 +259,6 @@ poetry.toml
 # LSP config files
 pyrightconfig.json
 
-# Resource
-/resource
-
 # Secrets
 secrets.json
 
