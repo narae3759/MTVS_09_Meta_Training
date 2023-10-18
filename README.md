@@ -1,6 +1,8 @@
 # Meta Training: 메타인지 향상을 위한 글쓰기 보조 AI
 
-### 🎥 시연 영상 보러가기(<a href="https://youtu.be/PF1W-fF4AwQ">Click!</a>) &nbsp;&nbsp;&nbsp;&nbsp;📙 회의록 보러가기(<a href="https://www.notion.so/AI-2324eb03fe8e47d797e7b3c72fe89e47">Click!</a>)&nbsp;&nbsp;&nbsp;&nbsp;📂 Google Drive 보러가기(<a href="https://drive.google.com/drive/folders/1oDagv1dsbvrkFJas_DQgVjtNZfi8g8iW">Click!</a>)
+### 🎥 시연 영상 보러가기(<a href="https://youtu.be/PF1W-fF4AwQ">Click!</a>) 
+### 📙 회의록 보러가기(<a href="https://www.notion.so/AI-2324eb03fe8e47d797e7b3c72fe89e47">Click!</a>)<br>
+### 📂 Google Drive 보러가기(<a href="https://drive.google.com/drive/folders/1oDagv1dsbvrkFJas_DQgVjtNZfi8g8iW">Click!</a>)
 
 
 <img src="./images/thumbnail.jpg" width="70%">
